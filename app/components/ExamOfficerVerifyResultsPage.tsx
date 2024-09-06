@@ -54,7 +54,7 @@ const ExamOfficerVerifyResultsPage: React.FC = () => {
       );
       setFilteredResults(filtered);
     }
-  }, [searchTerm, results]);
+  }, [searchTerm, results, fetchAllResults]);
 
   const fetchAllResults = async () => {
     setLoading(true);

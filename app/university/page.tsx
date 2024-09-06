@@ -31,7 +31,7 @@ const UniversityPage: React.FC = () => {
       );
       setFilteredResults(filtered);
     }
-  }, [searchTerm, results]);
+  }, [searchTerm, results, fetchAllVerifiedResults]);
 
   const fetchAllVerifiedResults = async () => {
     setLoading(true);
