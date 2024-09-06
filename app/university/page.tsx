@@ -2,6 +2,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Navbar from '../components/navbar';
+
 
 // Declare interface for the result structure
 interface Result {
@@ -67,8 +69,9 @@ const UniversityPage: React.FC = () => {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">University - Verified Student Results</h2>
+          <Navbar />
 
+      <h2 className="text-2xl font-bold mb-4">University - Verified Student Results</h2>
       <div className="mb-4">
         <input
           type="text"

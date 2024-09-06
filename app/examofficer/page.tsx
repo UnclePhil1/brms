@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import ExamOfficerLecturerPage from '../components/ExamOfficerLecturerPage';
 import ExamOfficerUniversityPage from '../components/ExamOfficerUniversityPage';
 import ExamOfficerVerifyResultsPage from '../components/ExamOfficerVerifyResultsPage';
+import Navbar from '../components/navbar';
 
 const ExamOfficerPage: React.FC = () => {
   const [activePage, setActivePage] = useState<string>('verifyResults');
 
   return (
     <div className="container mx-auto mt-10 p-6 bg-gray-800 text-white rounded-lg">
+          <Navbar />
       <div className="flex justify-between items-center gap-4 p-2">
         <h1 className="text-white text-3xl font-bold">BRMS - Exam Officer Dashboard</h1>
         <div className="flex gap-4">
