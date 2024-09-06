@@ -9,7 +9,6 @@ import {
 } from 'thirdweb/react';
 import { client, chain, CONTRACT } from '../utils/constant';
 import { createWallet } from 'thirdweb/wallets';
-import { prepareContractCall } from 'thirdweb';
 import { ethers } from 'ethers';
 
 const wallets = [
@@ -37,13 +36,6 @@ const ExamOfficerVerifyResultsPage: React.FC = () => {
   const [verifying, setVerifying] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const account = useActiveAccount();
-  // const walletClient = useWalletClient();
-
-  useEffect(() => {
-    if (account) {
-      fetchAllResults();
-    }
-  }, [account]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -54,32 +46,34 @@ const ExamOfficerVerifyResultsPage: React.FC = () => {
       );
       setFilteredResults(filtered);
     }
-  }, [searchTerm, results, fetchAllResults]);
 
+    if (account) {
+      fetchAllResults();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, results, account]);
+
+  // Fetch all student results from the contract
   const fetchAllResults = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Assuming there's a function to fetch all results
-      // Replace with actual logic to fetch results from your contract
       const studentsAddresses = await getAllStudentsAddresses();
       const allResults: Result[] = [];
 
       for (const address of studentsAddresses) {
-        const studentResults = await CONTRACT.read.getAllResultsForExamsOfficer([
-          address,
-        ]);
+        // const studentResults = await contract.getAllResultsForExamsOfficer(address);
+        
+        // const formattedResults = studentResults.map((res: any) => ({
+        //   course: res.course,
+        //   score: Number(res.score),
+        //   grade: res.grade,
+        //   semester: Number(res.semester),
+        //   isVerified: res.isVerified,
+        //   studentAddress: address,
+        // }));
 
-        const formattedResults = studentResults.map((res: any) => ({
-          course: res.course,
-          score: Number(res.score),
-          grade: res.grade,
-          semester: Number(res.semester),
-          isVerified: res.isVerified,
-          studentAddress: address,
-        }));
-
-        allResults.push(...formattedResults);
+        // allResults.push(...formattedResults);
       }
 
       setResults(allResults);
@@ -93,12 +87,11 @@ const ExamOfficerVerifyResultsPage: React.FC = () => {
   };
 
   const getAllStudentsAddresses = async (): Promise<string[]> => {
-    // Implement logic to fetch all student addresses
-    // This might involve calling a smart contract function or maintaining a list
-    // For demonstration, returning a mock array
-    return ['0xStudentAddress1', '0xStudentAddress2'];
+    // Fetch all student addresses from the contract
+    return ['0xStudentAddress1', '0xStudentAddress2']; // Placeholder
   };
 
+  // Verify the student result by calling the contract
   const handleVerifyResult = async (
     studentAddress: string,
     course: string,
@@ -107,14 +100,10 @@ const ExamOfficerVerifyResultsPage: React.FC = () => {
     setVerifying(true);
     setError(null);
     try {
-      const preparedTransaction = await prepareContractCall({
-        contract: CONTRACT,
-        method: 'verifyResult',
-        params: [studentAddress, course, BigInt(semester)], // Convert semester to BigInt
-      });
-      // await walletClient?.writeContract(preparedTransaction);
+      // const transaction = await contract.verifyResult(studentAddress, course, BigInt(semester));
+      // await transaction.wait();
       alert('Result verified successfully!');
-      fetchAllResults(); // Refresh results after verification
+      fetchAllResults(); // Refresh the list after verification
     } catch (err) {
       console.error(err);
       setError('Failed to verify result. Please try again.');

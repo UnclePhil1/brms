@@ -1,8 +1,9 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CONTRACT } from '../utils/constant';
 
+// Declare interface for the result structure
 interface Result {
   course: string;
   score: number;
@@ -18,11 +19,10 @@ const UniversityPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Simulate fetching data for demo purposes
   useEffect(() => {
     fetchAllVerifiedResults();
-  }, []);
 
-  useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredResults(results);
     } else {
@@ -31,33 +31,29 @@ const UniversityPage: React.FC = () => {
       );
       setFilteredResults(filtered);
     }
-  }, [searchTerm, results, fetchAllVerifiedResults]);
+  }, [searchTerm, results]);
 
+  // Mock function to simulate fetching verified results
   const fetchAllVerifiedResults = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Replace with actual logic to fetch verified results from your contract
-      const studentsAddresses = await getAllStudentsAddresses();
-      const allResults: Result[] = [];
-
-      for (const address of studentsAddresses) {
-        const studentResults = await CONTRACT.getAllResultsForUniversity([
-          address,
-        ]);
-
-        const formattedResults = studentResults
-          .filter((res: any) => res.isVerified) // Only verified results
-          .map((res: any) => ({
-            course: res.course,
-            score: Number(res.score),
-            grade: res.grade,
-            semester: Number(res.semester),
-            studentAddress: address,
-          }));
-
-        allResults.push(...formattedResults);
-      }
+      const allResults: Result[] = [
+        {
+          studentAddress: '0xStudentAddress1',
+          course: 'Blockchain 101',
+          score: 85,
+          grade: 'A',
+          semester: 1,
+        },
+        {
+          studentAddress: '0xStudentAddress2',
+          course: 'Smart Contracts',
+          score: 90,
+          grade: 'A+',
+          semester: 2,
+        },
+      ];
 
       setResults(allResults);
       setFilteredResults(allResults);
@@ -67,11 +63,6 @@ const UniversityPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getAllStudentsAddresses = async (): Promise<string[]> => {
-    // Implement logic to fetch all student addresses
-    return ['0xStudentAddress1', '0xStudentAddress2']; // Mock data
   };
 
   return (
