@@ -26,11 +26,11 @@ const Navbar: React.FC = () => {
                   Student
                 </span>
               </Link>
-              <Link href="/university">
+              {/* <Link href="/university">
                 <span className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                   University
                 </span>
-              </Link>
+              </Link> */}
               <Link href="/lecturer">
                 <span className="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                   Lecturer

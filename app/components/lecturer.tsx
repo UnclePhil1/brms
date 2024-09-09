@@ -1,133 +1,106 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ConnectButton, TransactionButton, useActiveAccount } from "thirdweb/react";
-import { client, chain, CONTRACT } from "../utils/constant";
-import { createWallet } from "thirdweb/wallets";
-import { prepareContractCall } from 'thirdweb';
-
-const wallets = [
-  createWallet("io.metamask"),
-  createWallet("com.coinbase.wallet"),
-  createWallet("me.rainbow"),
-  createWallet("io.rabby"),
-  createWallet("io.zerion.wallet"),
-];
+import { ConnectButton, useActiveAccount } from 'thirdweb/react';
+import { client, chain } from '../utils/constant';
+import { addUploadedResult } from '../data'; // Import the function to add results
 
 const Lecturer: React.FC = () => {
   const [studentAddress, setStudentAddress] = useState<string>('');
   const [course, setCourse] = useState<string>('');
   const [score, setScore] = useState<number>(0);
-  const [semester, setSemester] = useState<number>(1); // Default to 1 (First Semester)
+  const [semester, setSemester] = useState<number>(1);
   const account = useActiveAccount();
+
+  const handleUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Create the result object
+    const newResult = {
+      studentAddress,
+      course,
+      score,
+      semester,
+      isVerified: false, // Default to unverified
+    };
+
+    // Add the result to the data store
+    addUploadedResult(newResult);
+
+    // Clear the form after submission
+    setStudentAddress('');
+    setCourse('');
+    setScore(0);
+    setSemester(1);
+
+    alert('Result uploaded successfully!');
+  };
 
   return (
     <div className="container mx-auto mt-10 p-6 bg-gray-800 text-white rounded-lg">
-      <div className="flex justify-between items-center gap-4 p-2">
-        <h1 className="text-white">BRMS</h1>
-        <div className="flex gap-4 items-center">
-          <ConnectButton
-            client={client}
-            chain={chain}
-            connectModal={{ size: "compact" }}
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Lecturer - Upload Student Results</h2>
+        <ConnectButton
+          client={client}
+          chain={chain}
+          connectModal={{ size: "compact" }}
+        />
+      </div>
+      <form onSubmit={handleUpload} className="mb-6">
+        <div className="mb-4">
+          <label>Student Address</label>
+          <input
+            type="text"
+            value={studentAddress}
+            onChange={(e) => setStudentAddress(e.target.value)}
+            className="p-2 text-black w-full"
+            required
           />
         </div>
-      </div>
-
-      <div>
-        <h2 className="text-2xl font-bold mb-4">
-          Exams Officer - Upload Student Results
-        </h2>
-        <form className="mb-6">
-          <div className="mb-4">
-            <label>Student Address</label>
-            <input
-              type="text"
-              placeholder="Student Address"
-              value={studentAddress}
-              onChange={(e) => setStudentAddress(e.target.value)}
-              className="p-2 text-black w-full"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label>Student Course</label>
-            <input
-              type="text"
-              placeholder="Course"
-              value={course}
-              onChange={(e) => setCourse(e.target.value)}
-              className="p-2 text-black w-full"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label>Student Score</label>
-            <input
-              type="number"
-              placeholder="Score"
-              value={score}
-              onChange={(e) => {
-                const newScore = parseInt(e.target.value);
-                if (newScore >= 1 && newScore <= 100) {
-                  setScore(newScore);
-                } else if (newScore < 0) {
-                  setScore(1); 
-                } else if (newScore > 100) {
-                  setScore(100);
-                }
-              }}
-              className="p-2 text-black w-full"
-              min="1"
-              max="100"
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="block mb-2 text-white">Semester</label>
-            <div className="flex items-center space-x-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="1"
-                  checked={semester === 1}
-                  onChange={() => setSemester(1)}
-                  className="mr-2"
-                />
-                First Semester
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  value="2"
-                  checked={semester === 2}
-                  onChange={() => setSemester(2)}
-                  className="mr-2"
-                />
-                Second Semester
-              </label>
-            </div>
-          </div>
-
-          {account && course && score && studentAddress && (
-            <TransactionButton
-              transaction={() => {
-                return prepareContractCall({
-                  contract: CONTRACT,
-                  method: "uploadResult",
-                  params: [studentAddress, BigInt(score), course, BigInt(semester)],
-                });
-              }}
-              onError={(err) => window.alert(err)}
-              onTransactionConfirmed={() => window.alert("Successfully uploaded result")}
-              style={{ backgroundColor: "#01A8", color: "#ffff" }}
-            >
-              Upload Result
-            </TransactionButton>
-          )}
-        </form>
-      </div>
+        <div className="mb-4">
+          <label>Course</label>
+          <input
+            type="text"
+            value={course}
+            onChange={(e) => setCourse(e.target.value)}
+            className="p-2 text-black w-full"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label>Score</label>
+          <input
+            type="number"
+            value={score}
+            onChange={(e) => setScore(parseInt(e.target.value))}
+            className="p-2 text-black w-full"
+            min="1"
+            max="100"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label>Semester</label>
+          <select
+            value={semester}
+            onChange={(e) => setSemester(Number(e.target.value))}
+            className="p-2 text-black w-full"
+          >
+            <option value={1}>First Semester</option>
+            <option value={2}>Second Semester</option>
+          </select>
+        </div>
+        {account ? (
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+          >
+            Upload Result
+          </button>
+        ) : (
+          <p className="text-red-500">Please connect your wallet to upload results.</p>
+        )}
+      </form>
     </div>
   );
 };

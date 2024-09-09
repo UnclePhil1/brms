@@ -1,28 +1,226 @@
+// 'use client';
+
+// import React, { useState, useEffect } from 'react';
+// import { ConnectButton, useActiveAccount } from 'thirdweb/react';
+// import { client, chain } from '../utils/constant';
+// import { getUploadedResults, verifyResult, updateResult } from '../data';
+
+// interface Result {
+//   course: string;
+//   score: number;
+//   semester: number;
+//   isVerified: boolean;
+//   studentAddress: string;
+// }
+
+// const ExamOfficerVerifyResultsPage: React.FC = () => {
+//   const [results, setResults] = useState<Result[]>([]);
+//   const [searchTerm, setSearchTerm] = useState<string>('');
+//   const [searchResult, setSearchResult] = useState<Result | null>(null);
+//   const [editableResult, setEditableResult] = useState<Result | null>(null);
+//   const [verifying, setVerifying] = useState<boolean>(false);
+//   const [updating, setUpdating] = useState<boolean>(false);
+//   const account = useActiveAccount();
+
+//   useEffect(() => {
+//     if (account) {
+//       const fetchedResults = getUploadedResults();
+//       console.log('Fetched Results:', fetchedResults); // Debugging
+//       setResults(fetchedResults);
+//       const foundResult = fetchedResults.find((result) =>
+//         result.studentAddress.toLowerCase() === account.address.toLowerCase() && result.isVerified
+//       );
+//       if (foundResult) {
+//         setSearchResult(foundResult);
+//         setEditableResult({ ...foundResult });
+//       } else {
+//         setSearchResult(null);
+//         setEditableResult(null);
+//       }
+//     }
+//   }, [account]);
+
+//   const handleSearch = () => {
+//     console.log('Searching for:', searchTerm); // Debugging
+//     const foundResult = results.find((result) =>
+//       result.studentAddress.toLowerCase().includes(searchTerm.toLowerCase()) && result.isVerified
+//     );
+//     if (foundResult) {
+//       setSearchResult(foundResult);
+//       setEditableResult({ ...foundResult });
+//     } else {
+//       setSearchResult(null);
+//       setEditableResult(null);
+//       alert('No results found for this address.');
+//     }
+//   };
+
+//   const handleVerifyResult = (studentAddress: string) => {
+//     setVerifying(true);
+//     verifyResult(studentAddress);
+//     setTimeout(() => {
+//       const updatedResults = getUploadedResults();
+//       console.log('Updated Results:', updatedResults); // Debugging
+//       setResults(updatedResults);
+//       const foundResult = updatedResults.find((result) =>
+//         result.studentAddress.toLowerCase() === studentAddress.toLowerCase()
+//       );
+//       if (foundResult) {
+//         setSearchResult(foundResult);
+//         setEditableResult({ ...foundResult });
+//       }
+//       setVerifying(false);
+//       alert('Result verified successfully!');
+//     }, 1000);
+//   };
+
+//   const handleUpdate = () => {
+//     if (editableResult) {
+//       setUpdating(true);
+//       try {
+//         updateResult(editableResult);
+//         setTimeout(() => {
+//           const updatedResults = getUploadedResults();
+//           console.log('Updated Results:', updatedResults); // Debugging
+//           setResults(updatedResults);
+//           const foundResult = updatedResults.find((result) =>
+//             result.studentAddress.toLowerCase() === editableResult.studentAddress.toLowerCase()
+//           );
+//           if (foundResult) {
+//             setSearchResult(foundResult);
+//             setEditableResult({ ...foundResult });
+//           }
+//           setUpdating(false);
+//           alert('Result updated successfully!');
+//         }, 1000);
+//       } catch (error) {
+//         setUpdating(false);
+//         alert('Update unsuccessful');
+//       }
+//     }
+//   };
+
+//   return (
+//     <div className="container mx-auto mt-10 p-6 bg-gray-800 text-white rounded-lg">
+//       <div className="flex justify-between items-center gap-4 p-2">
+//         <h2 className="text-2xl font-bold mb-4">Verify and Update Student Results</h2>
+//         <div className="flex gap-4 items-center">
+//           <ConnectButton client={client} chain={chain} connectModal={{ size: 'compact' }} />
+//         </div>
+//       </div>
+
+//       <div className="mt-8">
+//         <div className="mb-4 flex items-center gap-2">
+//           <input
+//             type="text"
+//             placeholder="Search by Student Address"
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//             className="p-2 text-black w-full rounded-md"
+//           />
+//           <button
+//             onClick={handleSearch}
+//             className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+//           >
+//             Search
+//           </button>
+//         </div>
+
+//         {searchResult && editableResult && (
+//           <div className="mt-4">
+//             <table className="w-full text-left mt-4">
+//               <thead>
+//                 <tr>
+//                   <th className="border px-4 py-2">Address</th>
+//                   <th className="border px-4 py-2">Course</th>
+//                   <th className="border px-4 py-2">Score</th>
+//                   <th className="border px-4 py-2">Semester</th>
+//                   <th className="border px-4 py-2">Status</th>
+//                   <th className="border px-4 py-2">Actions</th>
+//                 </tr>
+//               </thead>
+//               <tbody>
+//                 <tr>
+//                   <td className="border px-4 py-2">
+//                     {editableResult.studentAddress}
+//                   </td>
+//                   <td className="border px-4 py-2">
+//                     <input
+//                       type="text"
+//                       value={editableResult.course}
+//                       onChange={(e) => setEditableResult({ ...editableResult, course: e.target.value })}
+//                       className="p-2 text-black"
+//                     />
+//                   </td>
+//                   <td className="border px-4 py-2">
+//                     <input
+//                       type="number"
+//                       value={editableResult.score}
+//                       onChange={(e) => setEditableResult({ ...editableResult, score: parseInt(e.target.value) })}
+//                       className="p-2 text-black"
+//                       min="1"
+//                       max="100"
+//                     />
+//                   </td>
+//                   <td className="border px-4 py-2">
+//                     <select
+//                       value={editableResult.semester}
+//                       onChange={(e) => setEditableResult({ ...editableResult, semester: Number(e.target.value) })}
+//                       className="p-2 text-black"
+//                     >
+//                       <option value={1}>First Semester</option>
+//                       <option value={2}>Second Semester</option>
+//                     </select>
+//                   </td>
+//                   <td className="border px-4 py-2">
+//                     {editableResult.isVerified ? (
+//                       <span className="text-green-500">Verified</span>
+//                     ) : (
+//                       <span className="text-yellow-500">Unverified</span>
+//                     )}
+//                   </td>
+//                   <td className="border px-4 py-2">
+//                     {!editableResult.isVerified && (
+//                       <button
+//                         onClick={() => handleVerifyResult(editableResult.studentAddress)}
+//                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+//                         disabled={verifying}
+//                       >
+//                         {verifying ? 'Verifying...' : 'Verify'}
+//                       </button>
+//                     )}
+//                     {editableResult.isVerified && (
+//                       <button
+//                         onClick={handleUpdate}
+//                         className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md mt-2"
+//                         disabled={updating}
+//                       >
+//                         {updating ? 'Updating...' : 'Update'}
+//                       </button>
+//                     )}
+//                   </td>
+//                 </tr>
+//               </tbody>
+//             </table>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ExamOfficerVerifyResultsPage;
+
 'use client';
 
-// Verify Student Results
 import React, { useState, useEffect } from 'react';
-import {
-  ConnectButton,
-  TransactionButton,
-  useActiveAccount,
-} from 'thirdweb/react';
-import { client, chain, CONTRACT } from '../utils/constant';
-import { createWallet } from 'thirdweb/wallets';
-import { ethers } from 'ethers';
-
-const wallets = [
-  createWallet('io.metamask'),
-  createWallet('com.coinbase.wallet'),
-  createWallet('me.rainbow'),
-  createWallet('io.rabby'),
-  createWallet('io.zerion.wallet'),
-];
+import { ConnectButton, useActiveAccount } from 'thirdweb/react';
+import { client, chain } from '../utils/constant';
+import { getUploadedResults, verifyResult, updateResult } from '../data'; // Import the function to update results
 
 interface Result {
   course: string;
   score: number;
-  grade: string;
   semester: number;
   isVerified: boolean;
   studentAddress: string;
@@ -30,101 +228,69 @@ interface Result {
 
 const ExamOfficerVerifyResultsPage: React.FC = () => {
   const [results, setResults] = useState<Result[]>([]);
-  const [filteredResults, setFilteredResults] = useState<Result[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
+  const [searchResult, setSearchResult] = useState<Result | null>(null);
+  const [editableResult, setEditableResult] = useState<Result | null>(null);
   const [verifying, setVerifying] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [updating, setUpdating] = useState<boolean>(false);
   const account = useActiveAccount();
 
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredResults(results);
-    } else {
-      const filtered = results.filter((result) =>
-        result.studentAddress.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredResults(filtered);
-    }
-
     if (account) {
-      fetchAllResults();
+      // Fetch uploaded results from data.ts
+      const fetchedResults = getUploadedResults();
+      setResults(fetchedResults);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, results, account]);
+  }, [account]);
 
-  // Fetch all student results from the contract
-  const fetchAllResults = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const studentsAddresses = await getAllStudentsAddresses();
-      const allResults: Result[] = [];
-
-      for (const address of studentsAddresses) {
-        // const studentResults = await contract.getAllResultsForExamsOfficer(address);
-        
-        // const formattedResults = studentResults.map((res: any) => ({
-        //   course: res.course,
-        //   score: Number(res.score),
-        //   grade: res.grade,
-        //   semester: Number(res.semester),
-        //   isVerified: res.isVerified,
-        //   studentAddress: address,
-        // }));
-
-        // allResults.push(...formattedResults);
-      }
-
-      setResults(allResults);
-      setFilteredResults(allResults);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to fetch results. Please try again.');
-    } finally {
-      setLoading(false);
+  const handleSearch = () => {
+    const foundResult = results.find((result) =>
+      result.studentAddress.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    if (foundResult) {
+      setSearchResult(foundResult);
+      setEditableResult({ ...foundResult });
+    } else {
+      setSearchResult(null);
+      alert('No results found for this address.');
     }
   };
 
-  const getAllStudentsAddresses = async (): Promise<string[]> => {
-    // Fetch all student addresses from the contract
-    return ['0xStudentAddress1', '0xStudentAddress2']; // Placeholder
-  };
-
-  // Verify the student result by calling the contract
-  const handleVerifyResult = async (
-    studentAddress: string,
-    course: string,
-    semester: number
-  ) => {
+  const handleVerifyResult = (studentAddress: string) => {
     setVerifying(true);
-    setError(null);
-    try {
-      // const transaction = await contract.verifyResult(studentAddress, course, BigInt(semester));
-      // await transaction.wait();
-      alert('Result verified successfully!');
-      fetchAllResults(); // Refresh the list after verification
-    } catch (err) {
-      console.error(err);
-      setError('Failed to verify result. Please try again.');
-    } finally {
+    verifyResult(studentAddress);
+    setTimeout(() => {
+      const updatedResults = getUploadedResults();
+      setResults(updatedResults);
       setVerifying(false);
+      alert('Result verified successfully!');
+    }, 1000);
+  };
+
+  const handleUpdate = () => {
+    if (editableResult) {
+      setUpdating(true);
+      updateResult(editableResult);
+      setTimeout(() => {
+        const updatedResults = getUploadedResults();
+        setResults(updatedResults);
+        setUpdating(false);
+        alert('Result updated successfully!');
+      }, 1000);
     }
   };
 
   return (
     <div className="container mx-auto mt-10 p-6 bg-gray-800 text-white rounded-lg">
       <div className="flex justify-between items-center gap-4 p-2">
-        <h1 className="text-white text-3xl font-bold">BRMS - Exam Officer Dashboard</h1>
+        <h2 className="text-2xl font-bold mb-4">Verify and Update Student Results</h2>
         <div className="flex gap-4 items-center">
           <ConnectButton client={client} chain={chain} connectModal={{ size: 'compact' }} />
         </div>
       </div>
 
       <div className="mt-8">
-        <h2 className="text-2xl font-bold mb-4">Verify Student Results</h2>
-
-        <div className="mb-4">
+        <div className="mb-4 flex items-center gap-2">
           <input
             type="text"
             placeholder="Search by Student Address"
@@ -132,65 +298,87 @@ const ExamOfficerVerifyResultsPage: React.FC = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="p-2 text-black w-full rounded-md"
           />
+          <button
+            onClick={handleSearch}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+          >
+            Search
+          </button>
         </div>
 
-        {loading ? (
-          <div className="text-center mt-8">Loading results...</div>
-        ) : error ? (
-          <div className="text-center mt-8 text-red-500">{error}</div>
-        ) : filteredResults.length === 0 ? (
-          <div className="text-center mt-8">No results found.</div>
-        ) : (
-          <table className="w-full text-left">
-            <thead>
-              <tr>
-                <th className="border px-4 py-2">Student Address</th>
-                <th className="border px-4 py-2">Course</th>
-                <th className="border px-4 py-2">Score</th>
-                <th className="border px-4 py-2">Grade</th>
-                <th className="border px-4 py-2">Semester</th>
-                <th className="border px-4 py-2">Status</th>
-                <th className="border px-4 py-2">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredResults.map((result, index) => (
-                <tr key={index} className="hover:bg-gray-700">
-                  <td className="border px-4 py-2">{result.studentAddress}</td>
-                  <td className="border px-4 py-2">{result.course}</td>
-                  <td className="border px-4 py-2">{result.score}</td>
-                  <td className="border px-4 py-2">{result.grade}</td>
-                  <td className="border px-4 py-2">{result.semester}</td>
+        {searchResult && editableResult && (
+          <div className="mt-4">
+            <table className="w-full text-left mt-4">
+              <thead>
+                <tr>
+                  <th className="border px-4 py-2">Course</th>
+                  <th className="border px-4 py-2">Score</th>
+                  <th className="border px-4 py-2">Semester</th>
+                  <th className="border px-4 py-2">Status</th>
+                  <th className="border px-4 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
                   <td className="border px-4 py-2">
-                    {result.isVerified ? (
+                    <input
+                      type="text"
+                      value={editableResult.course}
+                      onChange={(e) => setEditableResult({ ...editableResult, course: e.target.value })}
+                      className="p-2 text-black"
+                    />
+                  </td>
+                  <td className="border px-4 py-2">
+                    <input
+                      type="number"
+                      value={editableResult.score}
+                      onChange={(e) => setEditableResult({ ...editableResult, score: parseInt(e.target.value) })}
+                      className="p-2 text-black"
+                      min="1"
+                      max="100"
+                    />
+                  </td>
+                  <td className="border px-4 py-2">
+                    <select
+                      value={editableResult.semester}
+                      onChange={(e) => setEditableResult({ ...editableResult, semester: Number(e.target.value) })}
+                      className="p-2 text-black"
+                    >
+                      <option value={1}>First Semester</option>
+                      <option value={2}>Second Semester</option>
+                    </select>
+                  </td>
+                  <td className="border px-4 py-2">
+                    {editableResult.isVerified ? (
                       <span className="text-green-500">Verified</span>
                     ) : (
                       <span className="text-yellow-500">Unverified</span>
                     )}
                   </td>
                   <td className="border px-4 py-2">
-                    {!result.isVerified ? (
+                    {!editableResult.isVerified && (
                       <button
-                        onClick={() =>
-                          handleVerifyResult(
-                            result.studentAddress,
-                            result.course,
-                            result.semester
-                          )
-                        }
+                        onClick={() => handleVerifyResult(editableResult.studentAddress)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
                         disabled={verifying}
                       >
                         {verifying ? 'Verifying...' : 'Verify'}
                       </button>
-                    ) : (
-                      <span className="text-gray-400">N/A</span>
+                    )}
+                    {editableResult.isVerified && (
+                      <button
+                        onClick={handleUpdate}
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md mt-2"
+                        disabled={updating}
+                      >
+                        {updating ? 'Updating...' : 'Update'}
+                      </button>
                     )}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
