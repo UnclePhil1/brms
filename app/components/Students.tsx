@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { client, chain } from "../utils/constant";
-import { getUploadedResults } from '../data'; // Import the function to fetch results
+import { getUploadedResults, storeResults, getStoredResults } from '../data'; // Import the function to fetch results
 
 const Students: React.FC = () => {
   const [results, setResults] = useState<any[]>([]); // Define the type if you have a specific structure
@@ -12,26 +12,49 @@ const Students: React.FC = () => {
   const account = useActiveAccount();
 
   useEffect(() => {
-    if (account) {
-      fetchResults(account.address);
-    }
-  }, [account]);
-
-  const fetchResults = async (address: string) => {
-    try {
-      const allResults = await getUploadedResults(); // Fetch all results
-      const studentResults = allResults.filter((result: any) => result.studentAddress.toLowerCase() === address.toLowerCase() && result.isVerified);
-      if (studentResults.length > 0) {
-        setResults(studentResults);
-      } else {
-        setResults([]);
-        setError('No verified results found for this address.');
+    if (!account) return; // Add this check
+  
+    const fetchResults = async () => {
+      try {
+        const storedResults = getStoredResults();
+        if (storedResults.length > 0) {
+          setResults(storedResults);
+        } else {
+          const allResults = await getUploadedResults(); // Fetch all results
+          const studentResults = allResults.filter((result: any) => result.studentAddress.toLowerCase() === account.address.toLowerCase() && result.isVerified);
+          if (studentResults.length > 0) {
+            setResults(studentResults);
+            console.log(studentResults);
+            storeResults(studentResults);
+          } else {
+            setResults([]);
+            setError('No verified results found for this address.');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        setError('Failed to fetch results. Please try again.');
       }
-    } catch (err) {
-      console.error(err);
-      setError('Failed to fetch results. Please try again.');
-    }
-  };
+    };
+    fetchResults();
+  }, [account]); // Add account as a dependency
+
+  // const fetchResults = async (address: string) => {
+  //   try {
+  //     const allResults = await getUploadedResults(); // Fetch all results
+  //     const studentResults = allResults.filter((result: any) => result.studentAddress.toLowerCase() === address.toLowerCase() && result.isVerified);
+  //     if (studentResults.length > 0) {
+  //       setResults(studentResults);
+  //       console.log(studentResults);
+  //     } else {
+  //       setResults([]);
+  //       setError('No verified results found for this address.');
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     setError('Failed to fetch results. Please try again.');
+  //   }
+  // };
 
   return (
     <div className="container mx-auto mt-10 p-6 bg-gray-800 text-white rounded-lg">
