@@ -3,74 +3,70 @@
 import React, { useState, useEffect } from 'react';
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { client, chain } from "../utils/constant";
-import { getUploadedResults, storeResults, getStoredResults } from '../data'; // Import the function to fetch results
+import { getUploadedResults, storeResults, getStoredResults } from '../data'; // Import necessary functions
 
 const Students: React.FC = () => {
-  const [results, setResults] = useState<any[]>([]); // Define the type if you have a specific structure
-  const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
+  const [results, setResults] = useState<any[]>([]); // Holds the verified results for the connected account
   const [error, setError] = useState<string | null>(null);
-  const account = useActiveAccount();
+  const account = useActiveAccount();  // Track the connected account (wallet)
 
   useEffect(() => {
-    if (!account) return; // Add this check
-  
+    if (!account) return; // If no account is connected, return early
+    
+    // Fetch only the verified result of the connected wallet address
     const fetchResults = async () => {
       try {
+        // Get stored results first (if cached)
         const storedResults = getStoredResults();
+        
         if (storedResults.length > 0) {
-          setResults(storedResults);
-        } else {
-          const allResults = await getUploadedResults(); // Fetch all results
-          const studentResults = allResults.filter((result: any) => result.studentAddress.toLowerCase() === account.address.toLowerCase() && result.isVerified);
+          // Use cached results if available
+          const studentResults = storedResults.filter((result: any) =>
+            result.studentAddress.toLowerCase() === account.address.toLowerCase() && result.isVerified
+          );
+          
           if (studentResults.length > 0) {
             setResults(studentResults);
-            console.log(studentResults);
-            storeResults(studentResults);
+          } else {
+            // setError('No verified results found for this address.');
+            setResults([]);  // Clear results if none found
+          }
+        } else {
+          const allResults = await getUploadedResults(); // Fetch all results from server
+          
+          // Filter only the verified results for the connected wallet address
+          const studentResults = allResults.filter((result: any) => 
+            result.studentAddress.toLowerCase() === account.address.toLowerCase() && result.isVerified
+          );
+          
+          if (studentResults.length > 0) {
+            setResults(studentResults);  // Set the student's verified results
+            storeResults(studentResults);  // Cache the results for future use
           } else {
             setResults([]);
-            setError('No verified results found for this address.');
+            // setError('No verified results found for this address.'); // Show error if no verified results found
           }
         }
       } catch (err) {
         console.error(err);
-        setError('Failed to fetch results. Please try again.');
+        setError('Failed to fetch results. Please try again.'); // Show error if fetching fails
       }
     };
-    fetchResults();
-  }, [account]); // Add account as a dependency
 
-  // const fetchResults = async (address: string) => {
-  //   try {
-  //     const allResults = await getUploadedResults(); // Fetch all results
-  //     const studentResults = allResults.filter((result: any) => result.studentAddress.toLowerCase() === address.toLowerCase() && result.isVerified);
-  //     if (studentResults.length > 0) {
-  //       setResults(studentResults);
-  //       console.log(studentResults);
-  //     } else {
-  //       setResults([]);
-  //       setError('No verified results found for this address.');
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     setError('Failed to fetch results. Please try again.');
-  //   }
-  // };
+    fetchResults();
+  }, [account]);  // Run this effect every time the account changes (wallet is connected)
 
   return (
     <div className="container mx-auto mt-10 p-6 bg-gray-800 text-white rounded-lg">
       <div className="flex justify-between items-center gap-4 p-2">
         <h1 className="text-white">BRMS - Student Results</h1>
         <div className="flex gap-4 items-center">
-          <ConnectButton
-            client={client}
-            chain={chain}
-            connectModal={{ size: "compact" }}
-          />
+          <ConnectButton client={client} chain={chain} connectModal={{ size: "compact" }} />
         </div>
       </div>
 
       <div className="mt-8">
-        {connectedAddress ? (
+        {account ? (
           <div>
             <h2 className="text-xl font-bold">Your Results</h2>
             {results.length > 0 ? (
@@ -99,8 +95,6 @@ const Students: React.FC = () => {
         ) : (
           <div className="text-center text-gray-500 mt-4">Please connect your wallet to view results.</div>
         )}
-
-        {error && <div className="text-center text-red-500 mt-4">{error}</div>}
       </div>
     </div>
   );
